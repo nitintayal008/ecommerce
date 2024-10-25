@@ -1,0 +1,23 @@
+:root {
+    --primary-color: #4CAF50;
+    --secondary-color: #333;
+    --error-color: #e74c3c;
+    --text-color: #333;
+    --bg-color: #f8f9fa;
+}
+
+@media (max-width: 1199px) {
+    /* Adjust layout for tablets */
+}
+
+@media (max-width: 991px) {
+    /* Adjust layout for small tablets */
+}
+
+@media (max-width: 767px) {
+    /* Adjust layout for mobile devices */
+}
+
+@media (max-width: 575px) {
+    /* Adjust layout for very small screens */
+}
