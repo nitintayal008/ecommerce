@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
-import './Login.css';
+import '../styles/Login.css';
 
 const Login = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });

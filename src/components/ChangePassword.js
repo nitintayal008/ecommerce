@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CryptoJS from 'crypto-js';
-import './ChangePassword.css';
+import '../styles/ChangePassword.css';
 
 const ChangePassword = () => {
     const [formData, setFormData] = useState({
