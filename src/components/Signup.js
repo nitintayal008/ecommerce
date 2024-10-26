@@ -1,48 +1,35 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 import '../styles/Signup.css';
 
 const Signup = () => {
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        mobile: '',
-        password: '',
-        confirmPassword: ''
-    });
-    const [errors, setErrors] = useState({});
     const navigate = useNavigate();
     
-    // Update form data on input change
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const { register, handleSubmit, watch, formState: { errors } } = useForm({
+        defaultValues: {
+            firstName: '',
+            lastName: '',
+            email: '',
+            mobile: '',
+            password: '',
+            confirmPassword: ''
+        }
+    });
 
-    // Helper function to encrypt password
     const encryptPassword = (password) => CryptoJS.AES.encrypt(password, 'your_secret_key').toString();
 
-    // Form submission handler
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const newErrors = validateForm();
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
-
-        // Check if email already exists in localStorage
+    const onSubmit = (data) => {
         let users = JSON.parse(localStorage.getItem('users')) || [];
-        if (users.some((user) => user.email === formData.email)) {
-            setErrors({ email: 'Email already exists' });
+        if (users.some((user) => user.email === data.email)) {
+            alert('Email already exists');
             return;
         }
 
-        // Encrypt password and save user
         const newUser = {
-            ...formData,
-            password: encryptPassword(formData.password),
+            ...data,
+            password: encryptPassword(data.password),
         };
         delete newUser.confirmPassword;
         users.push(newUser);
@@ -52,48 +39,68 @@ const Signup = () => {
         navigate('/login');
     };
 
-    // Form validation function
-    const validateForm = () => {
-        const { firstName, lastName, email, mobile, password, confirmPassword } = formData;
-        const errors = {};
-
-        if (!firstName) errors.firstName = 'First name is required';
-        if (!lastName) errors.lastName = 'Last name is required';
-        if (!email) errors.email = 'Email is required';
-        if (!mobile) errors.mobile = 'Mobile number is required';
-        if (!password) errors.password = 'Password is required';
-        if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match';
-
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$/;
-        if (!passwordRegex.test(password)) {
-            errors.password = 'Password must be 8-32 characters, with upper, lower, digit, and special character';
-        }
-
-        return errors;
-    };
-
     return (
         <div className="signup-container">
             <h2>Sign Up</h2>
-            <form onSubmit={handleSubmit}>
-                {/* Form Fields */}
-                <input type="text" name="firstName" placeholder="First Name" onChange={handleChange} />
-                {errors.firstName && <p className="error">{errors.firstName}</p>}
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <input
+                    type="text"
+                    placeholder="First Name"
+                    {...register('firstName', { required: 'First name is required' })}
+                />
+                {errors.firstName && <p className="error">{errors.firstName.message}</p>}
 
-                <input type="text" name="lastName" placeholder="Last Name" onChange={handleChange} />
-                {errors.lastName && <p className="error">{errors.lastName}</p>}
+                <input
+                    type="text"
+                    placeholder="Last Name"
+                    {...register('lastName', { required: 'Last name is required' })}
+                />
+                {errors.lastName && <p className="error">{errors.lastName.message}</p>}
 
-                <input type="email" name="email" placeholder="Email" onChange={handleChange} />
-                {errors.email && <p className="error">{errors.email}</p>}
+                <input
+                    type="email"
+                    placeholder="Email"
+                    {...register('email', {
+                        required: 'Email is required',
+                        pattern: {
+                            value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                            message: 'Invalid email format'
+                        }
+                    })}
+                />
+                {errors.email && <p className="error">{errors.email.message}</p>}
 
-                <input type="text" name="mobile" placeholder="Mobile Number" onChange={handleChange} />
-                {errors.mobile && <p className="error">{errors.mobile}</p>}
+                <input
+                    type="text"
+                    placeholder="Mobile Number"
+                    {...register('mobile', { required: 'Mobile number is required' })}
+                />
+                {errors.mobile && <p className="error">{errors.mobile.message}</p>}
 
-                <input type="password" name="password" placeholder="Password" onChange={handleChange} />
-                {errors.password && <p className="error">{errors.password}</p>}
+                <input
+                    type="password"
+                    placeholder="Password"
+                    {...register('password', {
+                        required: 'Password is required',
+                        minLength: { value: 8, message: 'Password must be at least 8 characters' },
+                        pattern: {
+                            value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$/,
+                            message: 'Password must include upper, lower, digit, and special character'
+                        }
+                    })}
+                />
+                {errors.password && <p className="error">{errors.password.message}</p>}
 
-                <input type="password" name="confirmPassword" placeholder="Confirm Password" onChange={handleChange} />
-                {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
+                <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    {...register('confirmPassword', {
+                        required: 'Confirm Password is required',
+                        validate: (value) =>
+                            value === watch('password') || 'Passwords do not match'
+                    })}
+                />
+                {errors.confirmPassword && <p className="error">{errors.confirmPassword.message}</p>}
 
                 <button type="submit">Sign Up</button>
             </form>
